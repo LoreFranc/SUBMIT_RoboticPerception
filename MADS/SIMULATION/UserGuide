@@ -1,0 +1,201 @@
+
+The guide summerise how to use the replay plugin, rerunn plugin and any other plugin your are creating.
+
+
+After you installed MADS by following the completely clear guide available, you can start by installing the already existing plugins: replay_plugin and rerunner_plugin.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+DIRECTORIES WITH PLUGINS NO NEED FOR THIS PART WE ALREADY HAVE THE PLUGINS IN GIT
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Create a base directory in which to work. Mine is in /home/{&USER}/Documents/github/RoboticPerception
+
+Once you navigate inside it: 
+cd /home/{&USER}/Documents/RoboticPerception
+
+Clone the repository:
+
+git clone (INSERT URL HERE)
+
+https://github.com/MADS-NET/replay_plugin
+
+https://github.com/MADS-NET/rerunner_plugin?tab=readme-ov-file
+
+The above are the URL of the replay and rerunn plugin. They are going to make a directory corresponding to their name. 
+
+To install it you must navigate inside the folder, for example with rerunner:
+(already inside RoboticPerception folder) cd rerunner_plugin
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+THE ABOVE SECTION IS NOT NEEDED. WE HAVE EVERYTHING RUNNING ON OUR GIT
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+to make effective your modifications, inside "build" folder of the plugin:
+make
+
+EXAMPLE:
+you modified the file "odometry_filter.cpp", you must save. 
+In a terminal, navigate to the folder "/SIMULATION/odometry_filter/build"
+Once inside, type "make" and enter.
+If it does not work or you do not have the build folter, inside "odometry_filter" folder:
+mkdir build %% cd build
+This makes the build folder and navigates inside it
+cmake .. && make
+This compiles the program and builds it
+
+It could happen that for some reason, even if you have the build folder, make does not work, then you can follow the next step:
+
+If it does not work, you need to remove and rebuild everything:
+inside the plugin folder (es: /replay_plugin)
+rm -rf build
+mkdir build && cd build
+cmake .. && make
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+MADS.INI FILE MODIFICATION
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+The professor made us use the mads.ini file inside the core of our computer. The problem is, if many of us are working on the same simulator, we cannot update for each other the mads.ini file. This creates a gap in the versions and everyone should have to manually update their own file. 
+To avoid this, we tell Mads that he must use a local file, instead of the predifined one. Follow the next steps:
+
+To locate where is it, try simply writing in terminal:
+
+mads ini -i
+
+This will give you an error like:
+
+Cannot write or overwrite "/usr/local/etc/mads.ini"
+
+To modify this file, you should do something like:
+
+sudo gedit /usr/local/etc/mads.ini
+
+But we are very much not interested in this file, we only want its directory.
+
+What we are going to do in the next step is removing the mads.ini inside the core of our pc and directing our local file in its place, like a pointer.
+
+To make MADS use your local mads.ini file:
+sudo rm /usr/local/etc/mads.ini
+then: (I did not specify this, but these operations should be executed while you are inside /SIMULATION folder. The $(pwd) tells the terminal to place there the current path you are in)
+sudo ln -sf $(pwd)/mads.ini /usr/local/etc/mads.ini
+
+il comodo di questo è che ora si può modificare direttamente il mads.ini in locale, senza dover entrare in cartelle protette, quindi facendo una modifica su git, il mads.ini di tutti viene aggioranto.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+INSTALLING RERUN.IO
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+I managed to install it by simply doing:
+
+pip3 install rerun-sdk==0.25.1
+
+After installation try running: 
+
+rerun
+
+To check if the viewer starts
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+RUNNING THE SIMULATION ------ OUTDATED BUT USEFULL TO RUN SINGLE AGENTS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+After this step, you are ready to run the simulation:
+
+- In a first terminal run:
+
+mads broker
+
+- In a second terminal we play the visualizer:
+
+python3 visualizer.py
+
+mads source replay.plugin -n "replay_encoders" -p 1000
+
+This particular one runs the [replay_encoders] agent
+
+- In a third terminal run the filter:
+
+mads filter odometry_filter.plugin -n "odometry_filter"
+
+- Finally, the source:
+
+mads source replay.plugin -n "encoders_source"
+
+- To check what is happening:
+mads feedback
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+HOW WE CURRENTLY RUN THE SIMULATION
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+As we did for the mads.ini file, we need to link the local files of the plugins to the files MADS searches for inside your pc. An example is presented.
+
+CREARE UN LINK PER IL PLUGIN:
+sudo ln -sf /home/lorenzo/Documents/RoboticPerception/odometry_filter/buildd/odometry_filter.plugin /usr/local/lib/odometry_filter.plugin
+
+check:
+ls -l /usr/local/lib/odometry_filter.plugin
+
+
+After you linked all the plugins (replay, rerun, odometry) you are ready to run everything!
+Inside the SIMULATION folder in the terminal:
+./run_all.sh
+
+if it does not work it means you either did not link your plugins or mads file. Or you need to manually build again the plugin (the setup only checks if you have the build folder)
+
+That single line runs a file that acts as if your were typing all the commands in the terminal. This way, you don't need to open 10 terminals and lose all your will to live.
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Comandi di Debug utili:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Se mads broker non funziona e ritorna qualcosa come:
+
+lorenzo@lorenzo-XPS-13-7390:~/Documents/RoboticPerception$ mads broker
+Reading settings from mads.ini [broker]
+ioctl error: No such device
+Cannot get IP address for NIC lo0
+Binding broker frontend (XSUB) at tcp://*:9090
+ZMQ error, could not connect: Address already in use
+
+Vuol dire che si è formato un ingorgo di processi. Verificare cos'è in esecuzione tramite:
+
+lsof -i :9090
+
+Questo mostrerà una lista con valori PID. Eliminarli tutti:
+
+tramite:
+pkill -f mads-brok (nome del processo)
+o manualmente:
+kill -9 <PID>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
