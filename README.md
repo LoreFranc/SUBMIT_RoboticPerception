@@ -41,9 +41,10 @@ It should return something like:
 
     lrwxrwxrwx 1 root root 63 Feb 6 11:06 /usr/local/etc/mads.ini -> /home/lorenzo/SUBMIT_RoboticPerception/MADS/SIMULATION/mads.ini
             
-If it does not work:sudo rm /usr/local/etc/mads.ini
+If it does not work:
 
-    sudo ln -sf $(pwd)/mads.ini /usr/local/etc/mads.ini
+      sudo rm /usr/local/etc/mads.ini
+      sudo ln -sf $(pwd)/mads.ini /usr/local/etc/mads.ini
             
 The handy thing about this is that now you can edit mads.ini directly locally without having to
 access protected folders. So, by making a change in Git, everyone's mads.ini gets updated.
