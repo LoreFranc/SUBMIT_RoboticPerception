@@ -1,4 +1,5 @@
-How to run the code
+# How to run the code
+
 Important files: `mads.ini`, `visualizer.py`, `run_all.sh`, `odometry_filter.cpp`, `replay.cpp`
 Important note: to allow us to work properly on a shared file (github) I found a way to use a local
 mads.ini, instead of the one contained in the root folder. When one of us modifies the local file and
@@ -6,7 +7,8 @@ commits, it updates the mads.ini of all the other.
 
 Useful commands are found in the UserGuide document.
 
-HOW TO CLONE REPO AND RUN ON LOCAL MACHINE
+## HOW TO CLONE REPO AND RUN ON LOCAL MACHINE
+
 You can clone in whichever folder you like, the repo contains a folder with all the data and the
 mads.ini file starts from inside the SIMULATION folder.
 To work with the current setup, we need to tell mads to use the mads.ini inside our local
@@ -80,7 +82,7 @@ To install it:
 
     pip install rerun-sdk==0.25.1
     
-Configurations of the mads.ini files for the simulations:
+## Configurations of the mads.ini files for the simulations:
 
 - 1st Dataset (the most complex one, with high slippage and aruco frequently out of frame):
   
