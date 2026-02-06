@@ -680,7 +680,7 @@ void ekf_update(State &s, const Vector3d &z, const Matrix3d &R) {
 
         if(abs(_filter_gyro.current_value()) > 0.001 && abs(_filter_enc_theta.current_value()) > 0.001){ // calcolo rapporto angoli rilevati
               _debug_slip.angle_ratio = abs(_filter_enc_theta.current_value()) / abs(_filter_gyro.current_value());
-              if (_debug_slip.angle_ratio < 0.5) _debug_slip.angle_ratio = 0.5;
+              if (_debug_slip.angle_ratio < 0.8) _debug_slip.angle_ratio = 0.8;
               if (_debug_slip.angle_ratio > 1.5) _debug_slip.angle_ratio = 1.5;
               ds_angle = ds / _debug_slip.angle_ratio;
         }
@@ -688,7 +688,7 @@ void ekf_update(State &s, const Vector3d &z, const Matrix3d &R) {
         if(abs(a_imu_final) > _conf.min_imu_accel_for_correction){
           _debug_slip.accel_ratio = abs(a_enc_sma) / abs(a_imu_final);
           if(_debug_slip.accel_ratio > 2) _debug_slip.accel_ratio = 2;
-          if(_debug_slip.accel_ratio < 0.75) _debug_slip.accel_ratio = 0.75;
+          if(_debug_slip.accel_ratio < 0.8) _debug_slip.accel_ratio = 0.8;
           ds_accel = ds / _debug_slip.accel_ratio;
         } 
 
