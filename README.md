@@ -7,6 +7,31 @@ commits, it updates the mads.ini of all the other.
 
 Useful commands are found in the UserGuide document.
 
+## A quick peek into the simulations
+
+<div align="center">
+
+  <table>
+    <tr>
+      <td align="center">
+        <h4>1st Dataset</h4> <img src="https://github.com/user-attachments/assets/1081d48c-0b9f-4a7e-ade3-cc2f067779d0" width="100%" />
+      </td>
+      
+ <td align="center">
+      <h4>2nd Dataset</h4> <img src="https://github.com/user-attachments/assets/4e21acec-303c-4a24-9a54-f1cddb72e2c7" width="100%" />
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" align="center">
+        <h4>3rd Dataset</h4> <img src="https://github.com/user-attachments/assets/5d6b2571-763a-4eb1-92f7-d109416cdc17" width="50%"> 
+      </td>
+    </tr>
+  </table>
+
+</div>
+
+
+
 ## HOW TO CLONE REPO AND RUN ON LOCAL MACHINE
 
 You can clone in whichever folder you like, the repo contains a folder with all the data and the
