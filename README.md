@@ -20,7 +20,7 @@ The next steps explain how to do so:
   
 - Navigate in the terminal inside the SIMULATION folder:
 
-      cd SUBMIT_RoboticPerception/MADS/SIMULATION/
+      cd SUBMIT_RoboticPerception/SIMULATION/
   
 - Locate where your root mads.ini file is located:
 
