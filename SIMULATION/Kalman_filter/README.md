@@ -1,10 +1,10 @@
-# /usr/local plugin for MADS
+# kalman_filter plugin for MADS
 
 This is a Filter plugin for [MADS](https://github.com/MADS-NET/MADS). 
 
 <provide here some introductory info>
 
-*Required MADS version: 1.4.0.*
+*Required MADS version: 2.0.0.*
 
 
 ## Supported platforms
@@ -40,7 +40,7 @@ cmake --install build --config Release
 The plugin supports the following settings in the INI file:
 
 ```ini
-[/usr/local]
+[kalman_filter]
 # Describe the settings available to the plugin
 ```
 

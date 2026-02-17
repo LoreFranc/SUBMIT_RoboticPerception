@@ -5,15 +5,13 @@ import math
 import sys
 from rerun.archetypes import Scalars 
 
-# --- CONFIGURAZIONE DEBUG ---
-# Se vuoi vedere solo i grafici e non il 3D, metti False
+
 SHOW_3D = True 
 
 
-# ----------------------------
-
 # Configurazione
-MADS_ENDPOINT = "tcp://localhost:9091"  #Broker port
+#MADS_ENDPOINT = "tcp://localhost:9091"  #Broker port
+MADS_ENDPOINT = "tcp://raspberrypi.local:9091"
 TOPIC_FILTER = ["odometry_filter"]        #listening topic
 
     
@@ -43,7 +41,7 @@ def get_nested(data, path):
 
 def main():
     # 1. Start Rerun
-    print("Starting Python visualizer...")
+    print(f"Starting Python visualizer connecting to: {MADS_ENDPOINT}")
     rr.init("MADS_Replication_Python", spawn=True)
 
     # 2. Connect to MADS (ZeroMQ)
@@ -56,6 +54,8 @@ def main():
     for topic in TOPIC_FILTER:
         socket.setsockopt_string(zmq.SUBSCRIBE, topic)
         print(f"Subscribed to topic: {topic}")
+
+    print("Waiting for data...")
     
 
     while True:
@@ -63,9 +63,22 @@ def main():
             # 3. Receive the message
             # MADS sends multipart messages: [Topic, JSON_Payload]
             msg = socket.recv_multipart()
-            topic = msg[0].decode('utf-8')
-            payload = msg[1].decode('utf-8')
-            data = json.loads(payload)
+
+            try:
+                topic = msg[0].decode('utf-8')
+            except UnicodeDecodeError:
+                # If topic is not decodable, skip this message
+                continue
+            if topic not in TOPIC_FILTER:
+                # If topic is not in our filter, skip decoding the payload
+                continue
+            try:
+                payload = msg[1].decode('utf-8')
+                data = json.loads(payload)
+            except (UnicodeDecodeError, json.JSONDecodeError):
+                # If payload is not decodable or not valid JSON, skip this message
+                print(f"Warning: Received non-JSON data on topic {topic}")
+                continue
 
             # 4. Extract data (with error handling)
             time_val = data.get("sim_time")

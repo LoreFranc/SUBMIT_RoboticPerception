@@ -1,10 +1,10 @@
-# odometry_filter plugin for MADS
+# test plugin for MADS
 
-This is a Filter plugin for [MADS](https://github.com/MADS-NET/MADS). 
+This is a Sink plugin for [MADS](https://github.com/MADS-NET/MADS). 
 
 <provide here some introductory info>
 
-*Required MADS version: 1.4.0.*
+*Required MADS version: 2.0.0.*
 
 
 ## Supported platforms
@@ -40,7 +40,7 @@ cmake --install build --config Release
 The plugin supports the following settings in the INI file:
 
 ```ini
-[odometry_filter]
+[test]
 # Describe the settings available to the plugin
 ```
 
