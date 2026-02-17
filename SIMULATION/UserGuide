@@ -175,8 +175,42 @@ o manualmente:
 kill -9 <PID>
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+COSE DA SAPERE FARE IN LAB
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Per modificare il mads.ini del walker:
+
+- Collegarsi alla rete wifi RaspAP
+
+- Da terminale, in teoria da qualsiasi cartella, scrivere:
+
+ssh alessandroluchetti@jakku.local
+
+La password è mirolab@
+
+- Poi inserire:
+
+ssh miro@raspberrypi.local
+
+passowrd: mirolab@
+
+- infine inserire:
+
+sudo nano /usr/local/etc/mads.ini
 
 
+
+Per runnare il codice con il walker, mentre si è collegati alla rete RaspAP:
+
+Aprire un terminale e navigare fino alla cartella prima della build del filtro (dentro odometry_filter) e lanciare:
+
+mads filter build/odometry_filter.plugin -s tcp://raspberrypi.local:9092
+
+
+Per visualizzare (ancora da aggiustare) in un nuovo terminale, navigare alla cartella SIMULATION e lanciare:
+
+python3 visualizer.py
 
 
 

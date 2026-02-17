@@ -362,18 +362,22 @@ void ekf_update(State &s, const Vector3d &z, const Matrix3d &R) {
   try {
 
     // Timecode
-    if(in.contains("timecode")){
-        _last_timecode = in["timecode"].get<double>();
-    } 
+    //if(in.contains("timecode")){
+    //    _last_timecode = in["timecode"].get<double>();
+    //} 
 
     // Encoders
     if (topic == "encoders") {
+
+      if(in.contains("timecode")){
+        _last_timecode = in["timecode"].get<double>();
+    } 
 
         
             _incoming_ticks_l = (long)in["encoders"]["left"].get<double>();
             _incoming_ticks_r = (long)in["encoders"]["right"].get<double>();
 
-            //cout << _incoming_ticks_l << endl;
+            cout << _incoming_ticks_l << endl;
         
 
         if (!_initialized) {
@@ -388,10 +392,10 @@ void ekf_update(State &s, const Vector3d &z, const Matrix3d &R) {
         }
     }
 
-    /*
+    
     // HTC
     // il segnale presenta dei salti improvvisi di pi, correggo qui per ottenere una valutazione migliore dell'errore angolare (non sono riuscito a risolvere completamente quindi lo commento)
-    if(in["agent_id"].get<string>() == "pose_htc_source") {
+    if(topic == "htc") {
         try{
           if(in["pose"].contains("position")){
             auto& pos = in["pose"]["position"];
@@ -402,9 +406,9 @@ void ekf_update(State &s, const Vector3d &z, const Matrix3d &R) {
               _htc_y = pos[1].get<double>();
             }
 
-            _htc_angle = in["message"]["pose"]["attitude"][2].get<double>();
+            _htc_angle = in["pose"]["attitude"][2].get<double>();
 
-           */
+           
             /*
             if(abs(_htc_angle - _prev_htc_angle) <= (M_PI + 0.1) && abs(_htc_angle - _prev_htc_angle) >= (M_PI - 0.1) ){
               diff = _htc_angle - _prev_htc_angle;
@@ -418,16 +422,20 @@ void ekf_update(State &s, const Vector3d &z, const Matrix3d &R) {
             _prev_htc_angle = _htc_angle;
             */
 
-            /*
+            
             htc_data = true;
           }
         } catch(...){
         }
     }  
     
-    */
+    
     // --- 3. IMU
-    if (topic == "imu") {      
+    if (topic == "imu") { 
+      
+      if(in.contains("timecode")){
+        _last_timecode = in["timecode"].get<double>();
+    } 
       //Gyro
         auto& gyro = in["gyro"];
           double raw_gx = gyro[0].get<double>();
@@ -513,6 +521,10 @@ void ekf_update(State &s, const Vector3d &z, const Matrix3d &R) {
 
     // RealSense
     if (topic == "H_initial_walker_aruco") {
+
+      if(in.contains("timecode")){
+        _last_timecode = in["timecode"].get<double>();
+    } 
       
       auto& p = in["pose"];
         // Position
@@ -570,13 +582,13 @@ void ekf_update(State &s, const Vector3d &z, const Matrix3d &R) {
 
       
         // Accumulate IMU data for calibration
-        if(topic == "imu_source") {
+        if(topic == "imu") {
         _calib_acc_x.push_back(in["accel"][1].get<double>() * 9.80665);
         _calib_acc_y.push_back(in["accel"][0].get<double>() * 9.80665);
         _calib_gyro_z.push_back(in["gyro"][2].get<double>());
         }
 
-        if(topic == "pose_rs_source") {
+        if(topic == "H_initial_walker_aruco") {
           _calib_rs_x.push_back(in["pose"]["position"][0].get<double>());
           _calib_rs_y.push_back(in["pose"]["position"][1].get<double>());
           _calib_rs_theta.push_back(in["pose"]["attitude"][2].get<double>());
@@ -623,17 +635,11 @@ void ekf_update(State &s, const Vector3d &z, const Matrix3d &R) {
 
         // if no new data, skip
         if (!_has_new_encoder_data) { //this all gets updated ONLY if we have new encoder data
-            out["pose"]["position"] = std::vector<double>{_state.x(0), _state.x(1), 0.0};
-            out["pose"]["orientation"] = _state.x(2);
-            out["skip"] = true;
             return return_type::success; // O warning,
         }
 
         double current_dt = _last_timecode_enc - _prev_time;
         if(current_dt <= 0.01){
-            out["pose"]["position"] = std::vector<double>{0.0, 0.0, 0.0};
-            out["pose"]["orientation"] = 0.0;
-            out["skip"] = true;
             return return_type::success; // Evita calcoli inutili
         } 
 

@@ -21,6 +21,10 @@
 #include <thread>
 #include <chrono>
 #include <iostream>
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <map>
 // Define the name of the plugin
 #ifndef PLUGIN_NAME
 #define PLUGIN_NAME "source"
@@ -29,6 +33,108 @@
 // Load the namespaces
 using namespace std;
 using json = nlohmann::json;
+
+class Replay {
+public:
+    Replay(std::string filename) : _filename(filename) {
+        load_csv();
+    }
+
+    void set_loop(bool loop) { _loop = loop; }
+
+    void reset() {
+        _current_row = 0;
+    }
+
+    bool has_next() {
+        return _current_row < _data.size();
+    }
+
+    json advance() {
+        if (!has_next()) return json();
+        return _data[_current_row++];
+    }
+
+private:
+    std::string _filename;
+    bool _loop = false;
+    size_t _current_row = 0;
+    std::vector<json> _data;
+    std::vector<std::string> _headers;
+
+    void load_csv() {
+        std::ifstream file(_filename);
+        if (!file.is_open()) {
+            throw std::runtime_error("Could not open CSV file: " + _filename);
+        }
+
+        std::string line;
+        // Read Header
+        if (std::getline(file, line)) {
+            std::stringstream ss(line);
+            std::string cell;
+            while (std::getline(ss, cell, ',')) {
+                _headers.push_back(trim(cell));
+            }
+        }
+
+        // Read Data
+        while (std::getline(file, line)) {
+            std::stringstream ss(line);
+            std::string cell;
+            json row_json;
+            size_t col_idx = 0;
+            
+            while (std::getline(ss, cell, ',')) {
+                if (col_idx < _headers.size()) {
+                    std::string key = _headers[col_idx];
+                    std::string val = trim(cell);
+                    
+                    // Try to parse as number, otherwise string
+                    try {
+                        size_t idx;
+                        double num = std::stod(val, &idx);
+                        if (idx == val.length()) {
+                            row_json[key] = num;
+                        } else {
+                            row_json[key] = val;
+                        }
+                    } catch (...) {
+                        row_json[key] = val;
+                    }
+                }
+                col_idx++;
+            }
+            
+            // Reconstruct nested structure if keys have slashes (e.g. "encoders/left")
+            json structured_row = unflatten(row_json);
+            _data.push_back(structured_row);
+        }
+    }
+
+    // Helper to unflatten keys like "encoders/left" -> {"encoders": {"left": ...}}
+    json unflatten(const json& flat) {
+        json result;
+        for (auto& [key, val] : flat.items()) {
+            // Very basic unflattening (handles only 1 level of nesting for simplicity)
+            // Ideally you should use a proper library or recursive function
+            // Here we just accept the flat structure or simple slash splitting
+            // For MADS replay, usually we just keep it simple.
+            
+            // FIX: For now, return flat json. 
+            // The logic in SourcePlugin::get_output handles flattening/unflattening usually
+            result[key] = val; 
+        }
+        return result;
+    }
+
+    std::string trim(const std::string& str) {
+        size_t first = str.find_first_not_of(' ');
+        if (std::string::npos == first) return str;
+        size_t last = str.find_last_not_of(' ');
+        return str.substr(first, (last - first + 1));
+    }
+};
 
 
 // Plugin class. This shall be the only part that needs to be modified,

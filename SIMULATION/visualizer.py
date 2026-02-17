@@ -1,4 +1,5 @@
 import zmq
+import msgpack
 import json
 import rerun as rr
 import math
@@ -17,8 +18,9 @@ TOPIC_FILTER = ["odometry_filter"]        #listening topic
     
 def get_nested(data, path):
     # 1. Prova accesso diretto (caso flattened)
+    if data is None: return None
     if path in data: return data[path]
-    if path.startswith("/") and path[1:] in data: return data[path[1:]]
+    #if path.startswith("/") and path[1:] in data: return data[path[1:]]
 
     # 2. Prova navigazione (caso nested)
     keys = path.strip("/").replace(".", "/").split("/")
@@ -26,15 +28,23 @@ def get_nested(data, path):
     try:
         for k in keys:
             # Gestione indici array (es. "position/0")
-            if isinstance(curr, list) and k.isdigit():
+            if isinstance(curr, (list,tuple)) and k.isdigit():
                 idx = int(k)
                 if idx < len(curr): curr = curr[idx]
                 else: return None
-            elif isinstance(curr, dict) and k in curr:
-                curr = curr[k]
+            elif isinstance(curr, dict):
+                if k in curr:
+                    curr = curr[k]
+                elif k.isdigit() and int(k) in curr:
+                    curr = curr[int(k)]
+                else:
+                    return None
             else:
                 return None
-        return float(curr)
+        try:
+            return float(curr)
+        except:
+            return None
     except:
         return None
 
@@ -47,7 +57,11 @@ def main():
     # 2. Connect to MADS (ZeroMQ)
     context = zmq.Context()
     socket = context.socket(zmq.SUB)
-    socket.connect(MADS_ENDPOINT)
+    try:
+        socket.connect(MADS_ENDPOINT)
+    except Exception as e:
+        print(f"Failed to connect to MADS endpoint {MADS_ENDPOINT}: {e}")
+        sys.exit(1)
     
     
     # Subscribe to the filter topic
@@ -57,6 +71,8 @@ def main():
 
     print("Waiting for data...")
     
+    
+
 
     while True:
         try:
@@ -64,25 +80,69 @@ def main():
             # MADS sends multipart messages: [Topic, JSON_Payload]
             msg = socket.recv_multipart()
 
+            payload = msg[1]  # JSON payload is the second part
+
+
             try:
                 topic = msg[0].decode('utf-8')
-            except UnicodeDecodeError:
+            except:
                 # If topic is not decodable, skip this message
                 continue
             if topic not in TOPIC_FILTER:
                 # If topic is not in our filter, skip decoding the payload
                 continue
+
+            data = None
+
+            # --- STRATEGIA DI DECODIFICA IBRIDA ---
+            
+            # TENTATIVO 1: JSON "Sporco" (Trova la prima '{')
+            # Questo risolve il problema del tuo log attuale (b'\x01\xf0O{"agent_id"...)
             try:
-                payload = msg[1].decode('utf-8')
-                data = json.loads(payload)
-            except (UnicodeDecodeError, json.JSONDecodeError):
-                # If payload is not decodable or not valid JSON, skip this message
-                print(f"Warning: Received non-JSON data on topic {topic}")
+                # Cerchiamo l'inizio del JSON
+                start_idx = payload.find(b'{')
+                end_idx = payload.rfind(b'}')
+                
+                if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
+                    # Buttiamo via l'header binario e decodifichiamo il resto
+                    json_bytes = payload[start_idx : end_idx+1]
+                    json_str = json_bytes.decode('utf-8', errors='ignore')
+                    data = json.loads(json_str)
+                else:
+                    # Se non c'è '{', proviamo MessagePack come fallback
+                    raise ValueError("No JSON start found")
+
+            except Exception as e:
+
+                try:
+                    unpacker = msgpack.Unpacker(raw=True, strict_map_key=False) 
+                    unpacker.feed(payload)
+
+                    data_raw = next(unpacker)  # Get the first unpacked object
+                except:
+                    continue
+
+
+            if not isinstance(data, dict):
                 continue
+
+
+            # --- DEBUG BRUTALE ---
+            if "pose" in data:
+                print("\n[DEBUG] POSE trovata!")
+                
+                if "debug" in data:
+                    print(f"[DEBUG] DEBUG trovato! Chiavi: {list(data['debug'].keys())}")
+                    # Controlliamo se ci sono dei NaN che rendono invisibile il grafico
+                    raw = data["debug"].get("raw_encoder_only")
+                    print(f"[DEBUG] Valore Raw Encoder: {raw}")
+                else:
+                    print("[ALLARME] Chiave 'debug' ASSENTE nel dizionario!")
+            # ---------------------
 
             # 4. Extract data (with error handling)
             time_val = data.get("sim_time")
-            if time_val is None: time_val = get_nested(data, "/message/timecode")
+            if time_val is None: time_val = get_nested(data, "timecode")
             #if time_val is not None: 
                 #rr.set_time_seconds("sim_time", float(time_val))
            
