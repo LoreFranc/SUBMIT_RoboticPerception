@@ -427,11 +427,7 @@ void ekf_update(State &s, const Vector3d &z, const Matrix3d &R) {
     
     */
     // --- 3. IMU
-    if (topic == "imu") {
-      //Variabili temporanee
-      double gx_body = 0.0, gy_body = 0.0, gz_body = 0.0;
-      double ax_body = 0.0, ay_body = 0.0, az_body = 0.0;
-      
+    if (topic == "imu") {      
       //Gyro
         auto& gyro = in["gyro"];
           double raw_gx = gyro[0].get<double>();
@@ -439,17 +435,41 @@ void ekf_update(State &s, const Vector3d &z, const Matrix3d &R) {
           double raw_gz = gyro[2].get<double>();
           
           // Applicazione matrice di rotazione
-          gx_body = raw_gy;
-          gy_body = raw_gx;
-          gz_body = -raw_gz;
+          double gx_body = raw_gy;
+          double gy_body = raw_gx;
+          double gz_body = -raw_gz;
 
       // Accel
         auto& accel = in["accel"];
           double raw_ay = accel[1].get<double>() * 9.80665;
 
           // Applicazione matrice di rotazione
-          ax_body = raw_ay;
-      
+          double ax_body = raw_ay;
+        
+      if(!_bias_computed){
+            if(_calibration_samples < CALIBRATION_LIMIT){
+              _bias_accel_x += ax_body;
+              _bias_gyro_z += gz_body;
+              _calibration_samples++;
+
+              _current_accel_x = 0.0;
+              _current_gyro_z = 0.0;
+            } else {
+              _bias_accel_x /= (double)CALIBRATION_LIMIT;
+              _bias_gyro_z /= (double)CALIBRATION_LIMIT;
+              _bias_computed = true;
+              std::cout << "IMU Calibrated with lever arm. Bias acc_X: " << _bias_accel_x << " Bias gyro_Z: " << _bias_gyro_z << std::endl;
+            }
+
+        _prev_gyro_x = gx_body;
+        _prev_gyro_y = gy_body;
+        _prev_gyro_z = gz_body;
+        _prev_imu_timecode = _last_timecode;
+
+        return return_type::success; // Skip processing until bias is computed
+      }
+
+            
       // Process IMU Data if both gyro and accel are ready
 
         double dt_imu = _last_timecode - _prev_imu_timecode;
@@ -477,30 +497,11 @@ void ekf_update(State &s, const Vector3d &z, const Matrix3d &R) {
         
           // Correzione finale
           double ax_corrected = ax_body - tan_x - cent_x;
-          
 
-          // Accelerometro X
-          if(!_bias_computed){
-            if(_calibration_samples < CALIBRATION_LIMIT){
-              _bias_accel_x += ax_corrected;
-              _bias_gyro_z += gz_body;
-              _calibration_samples++;
-              _current_accel_x = 0.0;
-            } else {
-              _bias_accel_x /= (double)CALIBRATION_LIMIT;
-              _bias_gyro_z /= (double)CALIBRATION_LIMIT;
-              _bias_computed = true;
-              std::cout << "IMU Calibrated with lever arm. Bias acc_X: " << _bias_accel_x << " Bias gyro_Z: " << _bias_gyro_z << std::endl;
-            }
-          } else {
-            _current_accel_x = ax_corrected - _bias_accel_x;
-            _current_gyro_z = (gz_body - _bias_gyro_z)* _conf.gyro_scaling;
-
-            
+          _current_accel_x = ax_corrected;
+          _current_gyro_z = (gz_body - _bias_gyro_z) * _conf.gyro_scaling;
         }
-
-
-      }
+          
       // aggiorna storico per la derivata
         _prev_gyro_x = gx_body;
         _prev_gyro_y = gy_body;
