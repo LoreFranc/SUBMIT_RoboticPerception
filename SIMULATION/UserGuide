@@ -207,6 +207,9 @@ Aprire un terminale e navigare fino alla cartella prima della build del filtro (
 
 mads filter build/odometry_filter.plugin -s tcp://raspberrypi.local:9092
 
+Per il feedback usare:
+
+mads feedback -s tcp://raspberrypi.local:9092
 
 Per visualizzare (ancora da aggiustare) in un nuovo terminale, navigare alla cartella SIMULATION e lanciare:
 

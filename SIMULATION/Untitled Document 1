@@ -1,0 +1,483 @@
+#   ____
+#  / ___|___  _ __ ___  _ __ ___   ___  _ __  
+# | |   / _ \| '_ ` _ \| '_ ` _ \ / _ \| '_ \ 
+# | |__| (_) | | | | | | | | | | | (_) | | | |
+#  \____\___/|_| |_| |_|_| |_| |_|\___/|_| |_|
+
+
+
+[agents]
+# Settings shared by all agents
+frontend_address = "tcp://localhost:9090"
+backend_address = "tcp://localhost:9091"
+settings_address = "tcp://localhost:9092"
+compress = true
+timecode_fps = 20
+
+
+#  __  __                   _ _ _   _     _      
+# |  \/  | ___  _ __   ___ | (_) |_| |__ (_) ___ 
+# | |\/| |/ _ \| '_ \ / _ \| | | __| '_ \| |/ __|
+# | |  | | (_) | | | | (_) | | | |_| | | | | (__ 
+# |_|  |_|\___/|_| |_|\___/|_|_|\__|_| |_|_|\___|
+#
+
+[broker]
+frontend_address = "tcp://*:9090"
+backend_address = "tcp://*:9091"
+settings_address = "tcp://*:9092"
+
+[logger]
+mongo_uri = "mongodb://localhost:27017"
+mongo_db = "Test2"
+# sub_topic = ["logger", "metadata", "rfid", "skeleton", "platform", "image", "agent_event", "bridge", "perf_assess"]
+# or, subscribe to all topics:
+# sub_topic = ["H_initial_walker_aruco", "H_initial_walker_htc", "encoders", "imu"]
+sub_topic = ["group1", "H_initial_walker_htc"]
+datamax_length = 75
+initially_paused = false
+
+[bridge]
+# default publish topic (if not passed via CLI)
+sub_topic = ["publish"]
+pub_topic = "bridge"
+
+[feedback]
+# Subscribes to ALL topics
+sub_topic = ["H_initial_walker_htc"]
+print_width = 0
+indent_width = 2
+
+[metadata]
+# Topic to publish to (single string!)
+pub_topic = "metadata"
+
+[perf_assess]
+pub_topic = "perf_assess"
+
+[publish]
+pub_topic = "publish"
+
+[dealer]
+sub_topic = ["publish", "spawner"]
+pub_topic = "dealer"
+dealer_address = "tcp://*:9093"
+
+[worker]
+pub_topic = "worker"
+dealer_address = "tcp://localhost:9093"
+
+
+#  ____  _             _           
+# |  _ \| |_   _  __ _(_)_ __  ___ 
+# | |_) | | | | |/ _` | | '_ \/ __|
+# |  __/| | |_| | (_| | | | | \__ \
+# |_|   |_|\__,_|\__, |_|_| |_|___/
+#                |___/             
+#
+
+[echoj]
+# Topic to publish to (single string!)
+pub_topic = "echoj"
+sub_topic = ["rfid"]
+
+
+[clock]
+# Topic to publish to (single string!)
+pub_topic = "clock"
+period = 200
+
+[loadcells]
+period = 18
+pub_topic = "loadcells"
+[loadcells.serial_number]
+mono = 588716
+triaxis_l = 582396
+triaxis_r = 588795
+triaxis_side = 587563
+
+[driver]
+pub_topic = "encoders"
+sub_topic = "set_point"
+speed_limit = 1.0
+wheel_radius = 0.085
+port = "/dev/drivers"
+dont_block = true
+period = 8
+
+[ego_state]
+sub_topic = ["encoders", "forces_calibrated", "odometry", "imu"]
+pub_topic = "ego_state"
+wheel_radius = 0.085
+wheel_base = 0.83
+total_ticks_enc = 4096
+dist_bar_3LC_x = 0.44
+dist_bar_3LC_y = 0.17
+dist_bar_side_x = 0.183
+dist_bar_side_y = 0.335
+angles_load_cells = 0.785375
+[ego_state.imu]
+sigma_gyro = 0.02
+sigma_accel = 0.05
+sigma_magnet = 25
+dist_y = -0.20
+dist_x = 0.7
+imu_enable = true
+
+[impedance_control]
+sub_topic = ["incipit", "ego_state", "mqtt2mads"]
+pub_topic = "set_point"
+wheel_radius = 0.085
+wheel_base = 0.83
+walker_mass = 40
+wheel_mass = 1
+I_body = 6.605744
+
+[forces_calibration]
+sub_topic = ["loadcells", "mqtt2mads"]
+pub_topic = "forces_calibrated"
+
+[mqtt2mads]
+broker_host = "localhost" # MQTT broker host
+broker_port = 1883        # MQTT broker port
+silent = false            # If true, no log messages are printed
+QoS = 2                   # MQTT Quality of Service
+topic = "mqtt2mads"               # MQTT topic to subscribe to
+period = 100
+
+[mads2mqtt]
+sub_topic = ["mads2mqtt"]
+broker_host = "localhost" # MQTT broker host
+broker_port = 1883        # MQTT broker port
+period = 100
+silent = false            # If true, no log messages are printed
+QoS = 2                   # MQTT Quality of Service
+topic = "mads2mqtt"               # MQTT topic to submitted to
+
+[FSM]
+sub_topic = ["ego_state", "mqtt2mads", "encoders", "harness_detachment"]
+pub_topic = "set_point"
+[FSM.impedance_control]
+wheel_radius = 0.085
+wheel_base = 0.83
+walker_mass = 40
+wheel_mass = 1
+I_body = 6.605744
+[FSM.set_reference]
+delta_s = 1.0
+
+[portenta]
+sub_topic = ["portenta"]
+port = "/dev/portenta"
+silent = false
+
+[aruco]
+period = 40
+
+[python]
+pub_topic = "htc"
+period = 40
+venv = "/home/alessandroluchetti/VirtualEnvironment"
+python_module = "source"
+search_paths = ["/home/alessandroluchetti/Ermes/plugin/python_agent_HTC_vive/python"]
+IP = "192.168.0.255"
+
+[absolute_pose_htc]
+sub_topic = ["H_tracker_pca", "mqtt2mads"]
+pub_topic = "H_initial_walker_htc"
+H_walkerICR_target =[
+[0.938925981722687,    -0.344119166635759,    0,    0.309343999999999],
+[0.344119166635759,     0.938925981722687,    0,   -0.232031000000000],
+[0,                    0,                   1,    0],
+[0,                    0,                   0,    1]]
+
+[absolute_pose_realsense]
+sub_topic = ["aruco", "mqtt2mads"]
+pub_topic = "H_initial_walker_aruco"
+H_target_walkerICR = [
+[-1,     0,      0,      0.82],
+[0,    -1,      0,      0],
+[0,     0,      1,      0],
+[0,     0,      0,      1]
+]
+
+[hat]
+pub_topic = "imu"
+period = 20
+[hat.enabled_sensors]
+gyro = true
+humidity = false
+pressure = false
+compass = true
+
+[imu]
+pub_topic = "imu"
+port = "serial/by-id/usb-Silicon_Labs_CP2102N_USB_to_UART_Bridge_Controller_b6220533b210e9118d4a597387f8ef3e-if00-port0"
+period = 100
+
+[htc_with_pca]
+pub_topic = "H_tracker_pca"
+sub_topic = ["mqtt2mads", "htc"]
+
+[tui]
+pub_topic = "metadata" # NOTHE THIS!!!
+silent = false # Avoids polluting the console with debug messages
+
+[replay]
+csv_file = "/home/alessandroluchetti/Ermes/plugin/replay_plugin/example.csv"
+loop = true # once the end of file has been reached, start again from beginning
+
+[agents_status]
+silent = true
+sub_topic = ["agent_event"]
+
+[harness_detachment]
+sub_topic = ["forces_calibrated"]
+windows_length = 30
+mean_threshold = -3.4
+std_threshold = 0.025
+diff_threshold = 0.03
+silent = true
+min_diff_threshold = 5.0
+
+########  ######## ########  ##     ## ##    ## ##    ## ######## ########  
+##     ## ##       ##     ## ##     ## ###   ## ###   ## ##       ##     ## 
+##     ## ##       ##     ## ##     ## ####  ## ####  ## ##       ##     ## 
+########  ######   ########  ##     ## ## ## ## ## ## ## ######   ########  
+##   ##   ##       ##   ##   ##     ## ##  #### ##  #### ##       ##   ##   
+##    ##  ##       ##    ##  ##     ## ##   ### ##   ### ##       ##    ##  
+##     ## ######## ##     ##  #######  ##    ## ##    ## ######## ##     ## 
+
+[rerunner_total_forces]
+sub_topic = ["ego_state"] # Topics to subscribe to (array of strings)
+time = ""       # Name of the timecode column in the input data (string)
+# List of keypaths for time series
+#keypaths = ["/loadcells/forces/triaxis_l/fx_l", "/loadcells/forces/triaxis_l/fy_l", "/loadcells/forces/triaxis_l/fz_l", "/loadcells/forces/triaxis_r/fx_r", "/loadcells/forces/triaxi>
+# List of keypaths to build ACF for
+keypaths = ["/ego_state/ego_state/F_x", "/ego_state/ego_state/T"]
+acf_keypaths = ["/ego_state/ego_state/F_x", "/ego_state/ego_state/T"]
+fft_keypaths = ["/ego_state/ego_state/F_x", "/ego_state/ego_state/T"]
+# acf_keypaths = ["/loadcells/forces/mono/back_left"]
+# fft_keypaths = ["/loadcells/forces/mono/back_left"]
+# acf_keypaths = ["/loadcells/forces/triaxis_l/fx_l", "/loadcells/forces/triaxis_l/fy_l", "/loadcells/forces/triaxis_l/fz_l", "/loadcells/forces/triaxis_r/fx_r", "/loadcells/forces/t>
+# fft_keypaths = ["/loadcells/forces/triaxis_l/fx_l", "/loadcells/forces/triaxis_l/fy_l", "/loadcells/forces/triaxis_l/fz_l", "/loadcells/forces/triaxis_r/fx_r", "/loadcells/forces/t>
+window_size  = 200          # Width of the ACF and FFT window (integer)
+blueprint = "blueprint.rbl" # local or absolute path to a valid blueprint
+
+[rerunner_harness]
+sub_topic = ["harness_detachment"] # Topics to subscribe to (array of strings)
+time = ""       # Name of the timecode column in the input data (string)
+# List of keypaths for time series
+keypaths = ["/harness_detachment/magnitude_total_force"]
+window_size  = 200          # Width of the ACF and FFT window (integer)
+blueprint = "blueprint.rbl" # local or absolute path to a valid blueprint
+
+[rerunner_forces_calibrated]
+sub_topic = ["forces_calibrated"] # Topics to subscribe to (array of strings)
+time = ""       # Name of the timecode column in the input data (string)
+# List of keypaths for time series
+keypaths = ["/forces_calibrated/forces/triaxis_l/fx_l", "/forces_calibrated/forces/triaxis_l/fy_l", "/forces_calibrated/forces/triaxis_r/fx_r", "/forces_calibrated/forces/triaxis_r/fy_r", "/forces_cali>
+window_size  = 200          # Width of the ACF and FFT window (integer)
+blueprint = "blueprint.rbl" # local or absolute path to a valid blueprint
+
+[rerunner_imu]
+sub_topic = ["imu"] # Topics to subscribe to (array of strings)
+time = ""       # Name of the timecode column in the input data (string)
+# List of keypaths for time series
+keypaths = ["/imu/accel/0", "/imu/accel/1", "/imu/accel/2", "/imu/gyro/0", "/imu/gyro/1", "/imu/gyro/2", "/imu/fusionPose/0", "/imu/fusionPose/1", "/imu/fusionPose/2", "/imu/compass/0", "/imu/compass/1>
+window_size  = 200          # Width of the ACF and FFT window (integer)
+blueprint = "blueprint.rbl" # local or absolute path to a valid blueprint
+
+[rerunner_encoders]
+sub_topic = ["encoders"] # Topics to subscribe to (array >
+time = ""       # Name of the timecode column in the input data (s>
+# List of keypaths for time series
+keypaths = ["/encoders/encoders/right", "/encoders/encoders/left", "/encoders/speeds/left", "/encoders/speeds/right", "/encoders/currents/right", "/encoders/currents/left"]
+# keypaths = ["/encoders/encoders/right", "/encoders/encoders/left"]
+#acf_keypaths = ["/encoders/encoders/right", "/encoders/encoders/left"]
+winddow_size  = 200          # Width of the ACF and FFT window (int>
+blueprint = "blueprint.rbl" # local or absolute path to a valid bl>
+
+[rerunner_nagib]
+sub_topic = ["imu"] # Topics to subscribe to (array >
+time = ""       # Name of the timecode column in the input data (s>
+# List of keypaths for time series
+keypaths = ["/imu/imu/accelerations/x"]
+#acf_keypaths = ["/encoders/right", "/encoders/left"]
+winddow_size  = 200          # Width of the ACF and FFT window (int>
+blueprint = "blueprint.rbl" # local or absolute path to a valid bl>
+
+[rerunner_setpoints]
+sub_topic = ["set_point"] # Topics to subscribe to (array >
+time = ""       # Name of the timecode column in the input data (s>
+# List of keypaths for time series
+keypaths = ["/set_point/sp/sx", "/set_point/sp/dx"]
+#acf_keypaths = ["/encoders/right", "/encoders/left"]
+winddow_size  = 200          # Width of the ACF and FFT window (int>
+blueprint = "blueprint.rbl" # local or absolute path to a valid bl>
+
+[rerunner_ego]
+sub_topic = ["ego_state"] # Topics to subscribe to (array of strings)
+time = ""       # Name of the timecode column in the input data (string)
+# List of keypaths for time series
+# keypaths = ["/loadcells/forces/triaxis_l/fx_l", "/loadcells/forces/triaxis_l/fy_l", "/loadcells/forces/triaxis_l/fz_l", "/loadcells/forces/triaxis_r/fx_r", "/loadcells/forces/triaxis_r/fy_r", "/loadc>
+keypaths = ["/ego_state/ego_state/angular_speed", "/ego_state/ego_state/speed", "/ego_state/ego_state/x", "/ego_state/ego_state/y", "/ego_state/ego_state/theta"]
+window_size  = 200          # Width of the ACF and FFT window (integer)
+#blueprint = "blueprint.rbl" # local or absolute path to a valid blueprint
+
+[rerunner_htc_pca]
+sub_topic = ["H_tracker_pca"] # Topics to subscribe to (array of strings)
+# List of keypaths for time series
+keypaths = ["/H_tracker_pca/pose/position/0", "/H_tracker_pca/pose/position/1", "/H_tracker_pca/pose/position/2"]
+trace_keypaths = ["/H_tracker_pca/pose/position"]
+blueprint = "blueprint.rbl" # local or absolute path to a valid blueprint
+
+[rerunner_absolute_htc]
+sub_topic = ["H_initial_walker_htc"] # Topics to subscribe to (array of strings)
+# List of keypaths for time series
+keypaths = ["/H_initial_walker_htc/pose/position/0", "/H_initial_walker_htc/pose/position/1", "/H_initial_walker_htc/pose/position/2"]
+trace_keypaths = ["/H_initial_walker_htc/pose/position"]
+blueprint = "blueprint.rbl" # local or absolute path to a valid blueprint
+
+[rerunner_aruco]
+sub_topic = ["H_initial_walker_aruco"] # Topics to subscribe to (array of strings)
+time = ""       # Name of the timecode column in the input data (string)
+# List of keypaths for time series
+#keypaths = ["/absolute_pose_walker_for_realsense"]
+keypaths = ["/H_initial_walker_aruco/pose/position/0", "/H_initial_walker_aruco/pose/position/1", "/H_initial_walker_aruco/pose/position/2", "/H_initial_walker_aruco/pose/attitude_along_z"]
+trace_keypaths = ["/H_initial_walker_aruco/pose/position"]
+blueprint = "/home/alessandroluchetti/Ermes/plugin/rerunner_plugin/rerunner_paths_realsense.rbl" # local or absolute path to a valid blueprint
+
+[rerunner_htc]
+sub_topic = ["htc"] # Topics to subscribe to (array of strings)
+# time = "/absolute_pose_walker_for_htc/timecode"       # Name of the timecode column in the input data (string)
+# List of keypaths for time series
+keypaths = ["/htc/pose/position/0", "/htc/pose/position/1", "/htc/pose/position/2"]
+trace_keypaths = ["/htc/pose/position"]
+#blueprint = "/home/alessandroluchetti/Ermes/plugin/rerunner_plugin/rerunner_paths_htc.rbl" # local or absolute path to a valid blueprint
+
+[rerunner_paths]
+sub_topic = ["H_initial_walker_htc", "H_tracker_pca", "H_initial_walker_aruco"] # Topics to subscribe to (array of strings)
+# List of keypaths for time series
+keypaths = ["/H_initial_walker_htc/pose/position/0", "/H_initial_walker_htc/pose/position/1", "/H_initial_walker_htc/pose/position/2", "/H_tracker_pca/pose/position/0", "/H_tracker_pca/pose/position/1">
+trace_keypaths = ["/H_initial_walker_htc/pose/position", "/H_tracker_pca/pose/position", "/H_initial_walker_aruco/pose/position"]
+blueprint = "blueprint.rbl" # local or absolute path to a valid blueprint
+
+[rerunner_htc_abs_pose]
+sub_topic = ["H_initial_walker_htc", "H_tracker_pca"] # Topics to subscribe to (array of strings)
+# List of keypaths for time series
+keypaths = ["/H_initial_walker_htc/pose/position/0", "/H_initial_walker_htc/pose/position/1", "/H_initial_walker_htc/pose/position/2", "/H_tracker_pca/pose/position/0", "/H_tracker_pca/pose/position/1"]
+trace_keypaths = ["/H_initial_walker_htc/pose/position", "/H_tracker_pca/pose/position"]
+blueprint = "blueprint.rbl" # local or absolute path to a valid blueprint
+
+[rerunner_group4]
+sub_topic = ["odometry_filter"] # Topics to subscribe to (array of strings)
+# List of keypaths for time series
+keypaths = ["/odometry_filter/pose/position/0", "/odometry_filter/pose/position/1", "/odometry_filter/pose/position/2"]
+trace_keypaths = ["/odometry_filter/pose/position"]
+blueprint = "blueprint.rbl" # local or absolute path to a valid blueprint
+
+ ######  ######## ##     ## ########  ######## ##    ## ########  ######  
+##    ##    ##    ##     ## ##     ## ##       ###   ##    ##    ##    ## 
+##          ##    ##     ## ##     ## ##       ####  ##    ##    ##       
+ ######     ##    ##     ## ##     ## ######   ## ## ##    ##     ######  
+      ##    ##    ##     ## ##     ## ##       ##  ####    ##          ## 
+##    ##    ##    ##     ## ##     ## ##       ##   ###    ##    ##    ## 
+ ######     ##     #######  ########  ######## ##    ##    ##     ######  
+
+[pos_estimator]
+pub_topic = "group1"
+sub_topic = ["encoders", "imu", "H_initial_walker_aruco", "ego_state"]
+dev = false
+Rr = 0.08726
+Rl = 0.08582
+b = 0.86
+
+[rerunner_filter]
+pub_topic = "view"
+sub_topic = ["estimated", "H_initial_walker_htc"]
+
+[rerunner_group1]
+# sub_topic = ["sensors"]
+# keypaths = ["sensors/rh", "sensors/temp", "sensors/voc_0", "sensors/voc_1","sensors/pres_0", "sensors/pres_1"]
+# sub_topic = ["estimated"]
+# keypaths = ["estimated/pos/0", "estimated/pos/1", "estimated/theta","/estimated/comp/0", "/estimated/comp/1", "/estimated/comp_th"]
+# trace_keypaths = ["estimated/pos"]
+sub_topic = ["view", "H_initial_walker_htc"]
+keypaths = ["view/viewer_pos/0", "view/viewer_pos/1", "view/viewer_th", "view/viewer_err/0", "view/viewer_err/1", "view/viewer_err/2"]
+trace_keypaths = "view/viewer_pos"
+
+
+
+
+
+
+
+
+
+
+[rerunner_group4]
+sub_topic = ["odometry_filter"] # Topics to subscribe to (array of strings)
+# List of keypaths for time series
+keypaths = ["/odometry_filter/pose/position/0", "/odometry_filter/pose/position/1", "/odometry_filter/pose/position/2"]
+trace_keypaths = ["/odometry_filter/pose/position"]
+blueprint = "blueprint.rbl" # local or absolute path to a valid blueprint
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

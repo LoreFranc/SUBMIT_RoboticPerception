@@ -206,7 +206,7 @@ class Odometry_filterPlugin : public Filter<json, json> {
     double _bias_gyro_z = 0.0;
     int _calibration_samples = 0;
     bool _bias_computed = false;
-    const int CALIBRATION_LIMIT = 400;
+    const int CALIBRATION_LIMIT = 500;
     
     double _imu_accel_smooth_ema1 = 0.0;
     double _imu_accel_smooth_ema2 = 0.0;
@@ -360,6 +360,7 @@ void ekf_update(State &s, const Vector3d &z, const Matrix3d &R) {
   // into the output json object
  return_type load_data(const json &in, std::string topic = "") override {
   try {
+    
 
     // Timecode
     //if(in.contains("timecode")){
@@ -377,7 +378,7 @@ void ekf_update(State &s, const Vector3d &z, const Matrix3d &R) {
             _incoming_ticks_l = (long)in["encoders"]["left"].get<double>();
             _incoming_ticks_r = (long)in["encoders"]["right"].get<double>();
 
-            cout << _incoming_ticks_l << endl;
+            //cout << _incoming_ticks_l << endl;
         
 
         if (!_initialized) {
@@ -395,16 +396,17 @@ void ekf_update(State &s, const Vector3d &z, const Matrix3d &R) {
     
     // HTC
     // il segnale presenta dei salti improvvisi di pi, correggo qui per ottenere una valutazione migliore dell'errore angolare (non sono riuscito a risolvere completamente quindi lo commento)
-    if(topic == "htc") {
+    if(topic == "H_initial_walker_htc") {
         try{
           if(in["pose"].contains("position")){
             auto& pos = in["pose"]["position"];
 
-            if(pos.is_array() && pos.size() >= 2){
 
               _htc_x = pos[0].get<double>();
               _htc_y = pos[1].get<double>();
-            }
+
+              //cout << "HTC Position: (" << _htc_x << ", " << _htc_y << ")" << endl;
+            
 
             _htc_angle = in["pose"]["attitude"][2].get<double>();
 
