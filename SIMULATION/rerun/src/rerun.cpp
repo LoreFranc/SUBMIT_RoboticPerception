@@ -110,16 +110,18 @@ public:
                     .with_colors({0xFFFF00FF})); // Giallo
 
                 // Log Scia (Linea Gialla)
-                _rec.log("robot/FULL_EKF_path", 
-                    rerun::LineStrips3D(_traj_ekf.to_vector())
-                    .with_colors({0xFFFF00FF})
-                    .with_radii({0.01f}));
+                //_rec.log("robot/FULL_EKF_path", 
+                //    rerun::LineStrips3D(_traj_ekf.to_vector())
+                //    .with_colors({0xFFFF00FF})
+                //    .with_radii({0.01f}));
                 
             }
 
             // B. DEBUG DATA
             if (input.contains("debug")) {
+                
                 auto& d = input["debug"];
+                /*
 
                 // Raw Encoder (Rosso)
                 if (d.contains("raw_encoder_only")) {
@@ -154,7 +156,7 @@ public:
                         .with_colors({0x00FF00FF})
                         .with_radii({0.01f}));
                 }
-
+*/
                 // 3. RS Center (Ciano)
                 if (d.contains("rs_center")) {
                     float x = d["rs_center"][0];
@@ -166,10 +168,10 @@ public:
                         .with_radii({0.02f})
                         .with_colors({0x00FFFFFF})); // Ciano
 
-                    _rec.log("robot/rs_center_path",
-                        rerun::LineStrips3D(_traj_rs_center.to_vector())
-                        .with_colors({0x00FFFFFF})
-                        .with_radii({0.01f}));
+                    //_rec.log("robot/rs_center_path",
+                      //  rerun::LineStrips3D(_traj_rs_center.to_vector())
+                      //  .with_colors({0x00FFFFFF})
+                      //  .with_radii({0.01f}));
                 }
 
                 // HTC Position (Ground Truth)
@@ -183,14 +185,14 @@ public:
                         .with_colors({0x00FF00FF})
                         .with_radii({0.02f}));
 
-                    _rec.log("robot/htc_position_path",
-                        rerun::LineStrips3D(_traj_htc.to_vector())
-                        .with_colors({0x00FF00FF})
-                        .with_radii({0.01f}));
+                    //_rec.log("robot/htc_position_path",
+                     //   rerun::LineStrips3D(_traj_htc.to_vector())
+                     //   .with_colors({0x00FF00FF})
+                     //   .with_radii({0.01f}));
                 }
 
                 // --- SCALARS (Grafici Temporali) ---
-                
+               /* 
                 // Slip / Accelerazione
                 if (d.contains("accel_imu")) _rec.log("debug/slip/accel_imu", rerun::Scalars(d["accel_imu"]));
                 if (d.contains("accel_enc")) _rec.log("debug/slip/accel_encoder", rerun::Scalars(d["accel_enc"]));
@@ -225,7 +227,7 @@ public:
                 if (ev.contains("rmse_dist")) _rec.log("evaluation/rmse_distance", rerun::Scalars(ev["rmse_dist"]));
                 if (ev.contains("current_error_dist")) _rec.log("evaluation/error_distance", rerun::Scalars(ev["current_error_dist"]));
             }
-
+*/}
         } catch (const std::exception &e) {
             std::cerr << "[RerunSink] Parsing Error: " << e.what() << std::endl;
             // Non crashare, continua col prossimo pacchetto

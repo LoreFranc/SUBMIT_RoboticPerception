@@ -476,7 +476,7 @@ void ekf_update(State &s, const Vector3d &z, const Matrix3d &R) {
         _prev_gyro_z = gz_body;
         _prev_imu_timecode = _last_timecode;
 
-        return return_type::success; // Skip processing until bias is computed
+        return return_type::retry; // Skip processing until bias is computed
       }
 
             
@@ -637,12 +637,12 @@ void ekf_update(State &s, const Vector3d &z, const Matrix3d &R) {
 
         // if no new data, skip
         if (!_has_new_encoder_data) { //this all gets updated ONLY if we have new encoder data
-            return return_type::success; // O warning,
+            return return_type::retry; // O warning,
         }
 
         double current_dt = _last_timecode_enc - _prev_time;
         if(current_dt <= 0.01){
-            return return_type::success; // Evita calcoli inutili
+            return return_type::retry; // Evita calcoli inutili
         } 
 
         long d_ticks_l = _incoming_ticks_l - _prev_ticks_l;
@@ -824,48 +824,48 @@ void ekf_update(State &s, const Vector3d &z, const Matrix3d &R) {
         // OUTPUT
         
         // Odometry
-        out["debug"]["raw_encoder_only"] = std::vector<double>{_state_enc_only.x, _state_enc_only.y, 0.0};
+        //out["debug"]["raw_encoder_only"] = std::vector<double>{_state_enc_only.x, _state_enc_only.y, 0.0};
 
         // Partial EKF (odom + imu)
-        out["debug"]["Odom_corrected"] = std::vector<double>{_state_partial.x(0), _state_partial.x(1), 0.0};
+        //out["debug"]["Odom_corrected"] = std::vector<double>{_state_partial.x(0), _state_partial.x(1), 0.0};
 
         // Full EKF
         out["pose"]["position"] = std::vector<double>{_state.x(0), _state.x(1), 0.0};
-        out["pose"]["orientation"] = _state.x(2);
+        //out["pose"]["orientation"] = _state.x(2);
 
         // Slip debug
-        out["debug"]["accel_enc"] = _debug_slip.enc_accel;
-        out["debug"]["accel_imu"] = _debug_slip.imu_accel;
-        out["debug"]["is_slipping"] = _debug_slip.is_slipping ? 1.0 : 0.0;
-        out["debug"]["angle_ratio"] = _debug_slip.angle_ratio;
-        out["debug"]["accel_ratio"] = _debug_slip.accel_ratio;
-        out["debug"]["ds"] = _debug_slip.ds;
-        out["debug"]["ds_angle"] = _debug_slip.ds_angle;
-        out["debug"]["ds_accel"] = _debug_slip.ds_accel;
-        out["debug"]["ds_final"] = _debug_slip.ds_final;
-        out["debug"]["current_gyro_z"] = _current_gyro_z;
+        //out["debug"]["accel_enc"] = _debug_slip.enc_accel;
+        //out["debug"]["accel_imu"] = _debug_slip.imu_accel;
+        //out["debug"]["is_slipping"] = _debug_slip.is_slipping ? 1.0 : 0.0;
+        //out["debug"]["angle_ratio"] = _debug_slip.angle_ratio;
+        //out["debug"]["accel_ratio"] = _debug_slip.accel_ratio;
+        //out["debug"]["ds"] = _debug_slip.ds;
+        //out["debug"]["ds_angle"] = _debug_slip.ds_angle;
+        //out["debug"]["ds_accel"] = _debug_slip.ds_accel;
+        //out["debug"]["ds_final"] = _debug_slip.ds_final;
+        //out["debug"]["current_gyro_z"] = _current_gyro_z;
         
 
         // Angles debug
-        out["debug"]["angles"]["theta_enc"] = _debug_angle.angle_enc;
-        out["debug"]["angles"]["theta_imu"] = _debug_angle.angle_imu;
-        out["debug"]["angles"]["theta_rs"] = _ekf_theta_rs;
-        out["debug"]["angles"]["fused_full"] = _state.x(2);
-        out["debug"]["angles"]["fused_partial"] = _state_partial.x(2);
+        //out["debug"]["angles"]["theta_enc"] = _debug_angle.angle_enc;
+        //out["debug"]["angles"]["theta_imu"] = _debug_angle.angle_imu;
+        //out["debug"]["angles"]["theta_rs"] = _ekf_theta_rs;
+        //out["debug"]["angles"]["fused_full"] = _state.x(2);
+        //out["debug"]["angles"]["fused_partial"] = _state_partial.x(2);
         out["debug"]["rs_center"] = std::vector<double>{_rs_x, _rs_y, 0.0};
 
         //htc position
         out["debug"]["htc_position"] = std::vector<double>{_htc_x, _htc_y, 0.0};
-        out["debug"]["angles"]["htc_angle"] = _htc_angle;
+        //out["debug"]["angles"]["htc_angle"] = _htc_angle;
 
 
         // Error stats
-        out["evaluation"]["current_error_dist"] = err_dist;
-        out["evaluation"]["rmse_dist"] = rmse_dist;
-        out["evaluation"]["std_dist"] = std_dist;
+        //out["evaluation"]["current_error_dist"] = err_dist;
+        //out["evaluation"]["rmse_dist"] = rmse_dist;
+        //out["evaluation"]["std_dist"] = std_dist;
 
-        out["evaluation"]["current_error_theta"] = err_theta;
-        out["evaluation"]["rmse_theta"] = rmse_theta;
+        //out["evaluation"]["current_error_theta"] = err_theta;
+        //out["evaluation"]["rmse_theta"] = rmse_theta;
 
         if(_samples % 500 == 0 && _samples > 0){
           std::cout << "[METRICS] RMSE Dist: " << rmse_dist << " m "<< std::endl;
